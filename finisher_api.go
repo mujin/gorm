@@ -647,3 +647,19 @@ func (db *DB) Exec(sql string, values ...interface{}) (tx *DB) {
 	tx.callbacks.Raw().Execute(tx)
 	return
 }
+
+// Exec execute raw sql on a specific table
+func (db *DB) ExecTable(tableName, sql string, values ...interface{}) (tx *DB) {
+	tx = db.getInstance()
+	tx.Statement.SQL = strings.Builder{}
+	tx.Statement.Table = tableName
+
+	if strings.Contains(sql, "@") {
+		clause.NamedExpr{SQL: sql, Vars: values}.Build(tx.Statement)
+	} else {
+		clause.Expr{SQL: sql, Vars: values}.Build(tx.Statement)
+	}
+
+	tx.callbacks.Raw().Execute(tx)
+	return
+}

@@ -131,7 +131,11 @@ func (p *processor) Execute(db *DB) {
 	}
 
 	db.Logger.Trace(stmt.Context, curTime, func() (string, int64) {
-		return db.Dialector.Explain(stmt.SQL.String(), stmt.Vars...), db.RowsAffected
+		sql, vars := stmt.SQL.String(), stmt.Vars
+		if filter, ok := db.Logger.(ParamsFilter); ok {
+			sql, vars = filter.ParamsFilter(stmt.Context, sql, vars...)
+		}
+		return db.Dialector.Explain(sql, vars...), db.RowsAffected
 	}, db.Error)
 
 	if !stmt.DB.DryRun {

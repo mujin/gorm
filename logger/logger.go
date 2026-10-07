@@ -174,6 +174,9 @@ type traceRecorder struct {
 	SQL          string
 	RowsAffected int64
 	Err          error
+
+	// ParamsFilterLogger prints the recorded statement, so its ParamsFilter applies
+	ParamsFilterLogger Interface
 }
 
 func (l traceRecorder) New() *traceRecorder {
@@ -184,4 +187,14 @@ func (l *traceRecorder) Trace(ctx context.Context, begin time.Time, fc func() (s
 	l.BeginAt = begin
 	l.SQL, l.RowsAffected = fc()
 	l.Err = err
+}
+
+// ParamsFilter applies the ParamsFilter of ParamsFilterLogger, if it has one
+func (l *traceRecorder) ParamsFilter(ctx context.Context, sql string, params ...interface{}) (string, []interface{}) {
+	if filter, ok := l.ParamsFilterLogger.(interface {
+		ParamsFilter(ctx context.Context, sql string, params ...interface{}) (string, []interface{})
+	}); ok {
+		return filter.ParamsFilter(ctx, sql, params...)
+	}
+	return sql, params
 }

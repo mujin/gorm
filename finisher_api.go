@@ -459,6 +459,7 @@ func (db *DB) Rows() (*sql.Rows, error) {
 func (db *DB) Scan(dest interface{}) (tx *DB) {
 	config := *db.Config
 	currentLogger, newLogger := config.Logger, logger.Recorder.New()
+	newLogger.ParamsFilterLogger = currentLogger
 	config.Logger = newLogger
 
 	tx = db.getInstance()

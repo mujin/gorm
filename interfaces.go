@@ -26,6 +26,11 @@ type Plugin interface {
 	Initialize(*DB) error
 }
 
+// ParamsFilter filters the params a logger explains a statement with
+type ParamsFilter interface {
+	ParamsFilter(ctx context.Context, sql string, params ...interface{}) (string, []interface{})
+}
+
 // ConnPool db conns pool interface
 type ConnPool interface {
 	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
